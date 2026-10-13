@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# coding: utf-8
+#!/usr/bin/env python3
 
 '''begin_set
 
@@ -26,9 +25,11 @@ def cd_(file_path):
     if not isinstance(file_path, str) or not os.path.exists(file_path):
         raise ValueError(f'No such file: {file_path}')
 
-    os.chdir(os.path.dirname(
-        sys.executable
-        if hasattr(sys, 'frozen') else os.path.abspath(file_path)))
+    os.chdir(
+        os.path.dirname(
+            sys.executable if hasattr(sys, 'frozen') else os.path.abspath(file_path)
+        )
+    )
 
 
 def get_directory_tree(top_dir, rmpycache=True):
@@ -39,13 +40,18 @@ def get_directory_tree(top_dir, rmpycache=True):
     for directory in tree:
         # ファイル内包表記と高階関数にハマってるのでこんなことになってる。
         # 見やすさ度外視! 読みづれえ!
-        tree.extend([
-            file for file in map(
-                lambda file: directory + os.sep + file, os.listdir(directory))
-            if (os.path.isdir(file)
-                and not (
-                    rmpycache and os.path.basename(file) == '__pycache__'))
-        ])
+        tree.extend(
+            [
+                file
+                for file in map(
+                    lambda file: directory + os.sep + file, os.listdir(directory)
+                )
+                if (
+                    os.path.isdir(file)
+                    and not (rmpycache and os.path.basename(file) == '__pycache__')
+                )
+            ]
+        )
     return tree
 
 
