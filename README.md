@@ -40,6 +40,8 @@ import begin_set
 begin_set.exec_all(__file__)
 ```
 
+戻り値は、インポートパスの先頭に入れたパスのリスト。
+
 ## 開発
 
 ```bash

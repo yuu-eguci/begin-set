@@ -100,12 +100,15 @@ def remake_import_path(directory_tree, stacklevel=2):
 
 
 def exec_all(file_name):
-    '''このモジュールをフル実行します。引数には__file__を渡せばいいと思います。'''
+    '''このモジュールをフル実行します。引数には__file__を渡せばいいと思います。
+    インポートパスの先頭に入れたパスのリストを返します。'''
 
     start_dir = os.getcwd()
     cd_(file_name)
     top_dir = os.path.join(start_dir, os.path.dirname(file_name))
-    remake_import_path(get_directory_tree(top_dir, True), stacklevel=3)
+    directory_tree = get_directory_tree(top_dir, True)
+    remake_import_path(directory_tree, stacklevel=3)
+    return directory_tree
 
 
 if __name__ == '__main__':

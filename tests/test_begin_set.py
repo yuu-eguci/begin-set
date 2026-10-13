@@ -176,3 +176,10 @@ def test_shadow_warning_points_at_caller(app, tmp_path):
         begin_set.exec_all(str(app / 'main.py'))
     assert direct[0].filename == __file__
     assert via_exec_all[0].filename == __file__
+
+
+def test_exec_all_returns_added_paths(app, tmp_path):
+    os.chdir(tmp_path)
+    added = begin_set.exec_all(str(app / 'main.py'))
+    assert added == [str(app), str(app / 'pkg'), str(app / 'pkg' / 'sub')]
+    assert sys.path[:3] == added
