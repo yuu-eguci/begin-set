@@ -16,6 +16,7 @@
 
 import os
 import sys
+import warnings
 from pprint import pprint
 
 
@@ -69,8 +70,30 @@ def get_directory_tree(top_dir, rmpycache=True):
     return tree
 
 
-def remake_import_path(directory_tree):
-    '''インポートパスの先頭に追加する。もうあるパスは先頭に移す。'''
+def _warn_stdlib_shadows(directory, stacklevel):
+    try:
+        names = sorted(os.listdir(directory))
+    except OSError:
+        return
+    for name in names:
+        module = name.removesuffix('.py')
+        if module not in sys.stdlib_module_names:
+            continue
+        path = os.path.join(directory, name)
+        if name.endswith('.py') or os.path.isfile(os.path.join(path, '__init__.py')):
+            warnings.warn(
+                f'{path} が標準ライブラリの {module} と同じ名前です',
+                stacklevel=stacklevel + 1,
+            )
+
+
+def remake_import_path(directory_tree, stacklevel=2):
+    '''インポートパスの先頭に追加する。もうあるパスは先頭に移す。
+    標準ライブラリと同じ名前のモジュールがあれば警告する。
+    stacklevel は warnings.warn と同じ意味で、警告に出す呼び出し元を決める。'''
+
+    for directory in directory_tree:
+        _warn_stdlib_shadows(directory, stacklevel)
 
     added = set(directory_tree)
     sys.path[:] = directory_tree + [p for p in sys.path if p not in added]
@@ -82,7 +105,7 @@ def exec_all(file_name):
     start_dir = os.getcwd()
     cd_(file_name)
     top_dir = os.path.join(start_dir, os.path.dirname(file_name))
-    remake_import_path(get_directory_tree(top_dir, True))
+    remake_import_path(get_directory_tree(top_dir, True), stacklevel=3)
 
 
 if __name__ == '__main__':

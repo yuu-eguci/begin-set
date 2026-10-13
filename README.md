@@ -30,6 +30,7 @@ docker compose run --rm --build app python begin_set.py
 
 検索先の先頭に追加するので、配下に `json.py` があれば標準ライブラリより優先される。
 他人が書き込めるフォルダ (アップロード先とか) がある場所では使わないでね。
+標準ライブラリと同じ名前の `.py` やパッケージを見つけたら、`UserWarning` で知らせる。
 
 ## Usage
 

@@ -147,3 +147,32 @@ def test_exec_all_accepts_relative_path(app, tmp_path):
     begin_set.exec_all(os.path.join('app', 'main.py'))
     assert os.getcwd() == str(app)
     assert str(app / 'pkg' / 'sub') in sys.path
+
+
+def test_remake_import_path_warns_on_stdlib_shadow(app):
+    (app / 'pkg' / 'json.py').write_text('')
+    (app / 'pkg' / 'sub' / 'logging').mkdir()
+    (app / 'pkg' / 'sub' / 'logging' / '__init__.py').write_text('')
+    with pytest.warns(UserWarning) as record:
+        begin_set.remake_import_path(begin_set.get_directory_tree(str(app)))
+    messages = ' '.join(str(w.message) for w in record)
+    assert 'json' in messages
+    assert 'logging' in messages
+
+
+def test_remake_import_path_does_not_warn_without_shadow(app, recwarn):
+    (app / 'pkg' / 'email_utils.py').write_text('')
+    (app / 'pkg' / 'os').mkdir()  # __init__.py が無いので標準ライブラリに負ける
+    begin_set.remake_import_path(begin_set.get_directory_tree(str(app)))
+    assert not [w for w in recwarn if issubclass(w.category, UserWarning)]
+
+
+def test_shadow_warning_points_at_caller(app, tmp_path):
+    (app / 'pkg' / 'json.py').write_text('')
+    with pytest.warns(UserWarning) as direct:
+        begin_set.remake_import_path(begin_set.get_directory_tree(str(app)))
+    os.chdir(tmp_path)
+    with pytest.warns(UserWarning) as via_exec_all:
+        begin_set.exec_all(str(app / 'main.py'))
+    assert direct[0].filename == __file__
+    assert via_exec_all[0].filename == __file__
